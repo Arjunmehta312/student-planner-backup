@@ -1,0 +1,51 @@
+name: Export Notion Student Planner
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM
+  workflow_dispatch:     # Manual trigger
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Clean previous export (optional)
+      - run: 'rm -rf student-planner/'
+      
+      # Export from Notion
+      - uses: Gabriella439/notion-to-markdown@main
+        with:
+          notion-token: ${{ secrets.NOTION_TOKEN }}
+      
+      # Organize files (create folders)
+      - name: Organize exported files
+        run: |
+          mkdir -p student-planner/courses
+          mkdir -p student-planner/assignments
+          mkdir -p student-planner/notes
+          mkdir -p student-planner/schedules
+          mkdir -p student-planner/resources
+          
+          # Move files to appropriate folders based on naming
+          for file in *.md; do
+            if [[ "$file" == *"course"* ]] || [[ "$file" == *"class"* ]]; then
+              mv "$file" student-planner/courses/
+            elif [[ "$file" == *"assignment"* ]] || [[ "$file" == *"homework"* ]]; then
+              mv "$file" student-planner/assignments/
+            elif [[ "$file" == *"note"* ]]; then
+              mv "$file" student-planner/notes/
+            elif [[ "$file" == *"schedule"* ]] || [[ "$file" == *"calendar"* ]]; then
+              mv "$file" student-planner/schedules/
+            else
+              mv "$file" student-planner/resources/
+            fi
+          done
+      
+      # Commit changes
+      - uses: EndBug/add-and-commit@v9
+        with:
+          add: 'student-planner/'
+          message: 'Auto-export from Notion: {{ date }}'
+  
