@@ -1,8 +1,9 @@
 name: Export Notion Student Planner
+
 on:
   schedule:
-    - cron: '0 2 * * *'
-  workflow_dispatch:
+    - cron: '0 2 * * *'  # Daily at 2 AM IST
+  workflow_dispatch:      # Manual trigger
 
 jobs:
   export:
@@ -10,24 +11,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Remove previous export to avoid clutter
       - run: rm -rf student-planner/
 
+      # Export from Notion (outputs to Export-*)
       - uses: Gabriella439/notion-to-markdown@main
         with:
           notion-token: ${{ secrets.NOTION_TOKEN }}
-          output: "student-planner"  # if supported
 
-      # If output argument is not supported, add this:
-      # - name: Move export to student-planner
-      #   run: |
-      #     export_dir=$(find . -maxdepth 1 -type d -name "Export*" | head -n1)
-      #     if [ -n "$export_dir" ]; then
-      #       mv "$export_dir" student-planner
-      #     fi
+      # Move the exported directory to "student-planner"
+      - name: Move export to student-planner
+        run: |
+          export_dir=$(find . -maxdepth 1 -type d -name "Export*" | head -n1)
+          if [ -n "$export_dir" ]; then
+            mv "$export_dir" student-planner
+          fi
 
+      # Clean filenames and folders after export
       - name: Clean filenames and folders
         run: python3 "export cleaner/clean_notion_export.py"
 
+      # Commit and push changes to the repo
       - uses: EndBug/add-and-commit@v9
         with:
           add: 'student-planner/'
