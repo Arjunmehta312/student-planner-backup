@@ -1,8 +1,8 @@
 name: Export Notion Student Planner
 on:
   schedule:
-    - cron: '0 2 * * *'  # Daily at 2 AM
-  workflow_dispatch:     # Manual trigger
+    - cron: '0 2 * * *'
+  workflow_dispatch:
 
 jobs:
   export:
@@ -10,19 +10,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Remove previous export (optional, keeps only latest files)
       - run: rm -rf student-planner/
 
-      # Export from Notion
       - uses: Gabriella439/notion-to-markdown@main
         with:
           notion-token: ${{ secrets.NOTION_TOKEN }}
 
-      # Clean filenames and folders (removes UUIDs)
-      - name: Clean filenames and folders after export
+      - name: Clean filenames and folders
         run: python3 "export cleaner/clean_notion_export.py"
 
-      # Commit and push changes
       - uses: EndBug/add-and-commit@v9
         with:
           add: 'student-planner/'
