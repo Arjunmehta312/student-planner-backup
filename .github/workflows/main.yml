@@ -3,35 +3,26 @@ on:
   schedule:
     - cron: '0 2 * * *'  # Daily at 2 AM
   workflow_dispatch:     # Manual trigger
+
 jobs:
   export:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      # Clean previous export
-      - run: 'rm -rf student-planner/'
+
+      # Remove previous export (optional, keeps only latest files)
+      - run: rm -rf student-planner/
 
       # Export from Notion
       - uses: Gabriella439/notion-to-markdown@main
         with:
           notion-token: ${{ secrets.NOTION_TOKEN }}
-      
-      # Run cleaning script
+
+      # Clean filenames and folders (removes UUIDs)
       - name: Clean filenames and folders after export
         run: python3 "export cleaner/clean_notion_export.py"
-      
-      # Organize files (you might not even need this)
-      - name: Organize exported files
-        run: |
-          mkdir -p student-planner/courses
-          mkdir -p student-planner/assignments
-          mkdir -p student-planner/notes
-          mkdir -p student-planner/schedules
-          mkdir -p student-planner/resources
-          # Your organization/move commands here, if needed
 
-      # Commit changes
+      # Commit and push changes
       - uses: EndBug/add-and-commit@v9
         with:
           add: 'student-planner/'
