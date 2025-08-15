@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # Clean previous export (optional)
+      # Clean previous export
       - run: 'rm -rf student-planner/'
       
       # Export from Notion
@@ -19,7 +19,7 @@ jobs:
         with:
           notion-token: ${{ secrets.NOTION_TOKEN }}
       
-      # Organize files (create folders)
+      # Organize files
       - name: Organize exported files
         run: |
           mkdir -p student-planner/courses
